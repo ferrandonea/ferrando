@@ -1,2 +1,2 @@
 # ferrando
-utilidades varias con un toque autoreferente
+utilidades varias con un toque autorreferente
