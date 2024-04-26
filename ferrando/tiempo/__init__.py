@@ -1,2 +1,2 @@
-from . import get_time as gt
+from .get_time import get_time as gt
 print ("MODELO")
