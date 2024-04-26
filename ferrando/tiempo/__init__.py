@@ -1,1 +1,2 @@
-from . import get_time
+from . import get_time as gt
+ 
