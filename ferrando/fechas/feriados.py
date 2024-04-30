@@ -116,6 +116,55 @@ def add_trading_days(
     return (input_date + days * calendar).to_pydatetime()
 
 
+def range_trading_days(
+    start: Optional[datetime] = None,
+    end: Optional[datetime] = None,
+    periods: Optional[int] = None,
+    freq: str | CustomBusinessDay = chile_financial_days,
+    normalize: bool = True,
+) -> list[datetime]:
+    """
+    Genera un rango de días hábiles de trading entre dos fechas, o a partir de una fecha dada durante un número de períodos.
+
+    Parámetros:
+    start (datetime, opcional): Fecha de inicio del rango. Si es None, se deben proporcionar 'end' y 'periods'.
+    end (datetime, opcional): Fecha de fin del rango. Si es None, se deben proporcionar 'start' y 'periods'.
+    periods (int, opcional): Número de períodos a generar. Puede ser negativo para generar fechas hacia atrás.
+    freq (str | CustomBusinessDay, opcional): Cadena de frecuencia o instancia de CustomBusinessDay que define los días hábiles.
+    normalize (bool, opcional): Si se normaliza o no las fechas de inicio/fin a medianoche.
+
+    Devoluciones:
+    list[datetime]: Índice de fechas que representa los días de trading dentro del rango especificado.
+
+    Errores:
+    ValueError: Si el número de parámetros especificados es incorrecto o si falta algún parámetro requerido.
+
+    Ejemplos:
+    >>> range_trading_days(start=datetime(2023, 1, 1), periods=5)
+    DatetimeIndex(['2023-01-02', '2023-01-03', '2023-01-04', '2023-01-05', '2023-01-06'], dtype='datetime64[ns]', freq='B')
+    """
+    # Validación de los parámetros de entrada
+    params = [start, end, periods]
+    #Chequea que haya al menos 2 de 3 de los params
+    if sum(p is not None for p in params) != 2:
+        raise ValueError(
+            "Se deben especificar exactamente dos de los parámetros 'start', 'end' y 'periods'."
+        )
+
+    if periods is not None and periods < 0:
+        start, end = end, start  # Invertir start y end para manejar períodos negativos
+        periods = abs(periods)  # Tomar el valor absoluto de los períodos
+
+    # Generación del rango de fechas
+    result = pd.date_range(
+        start=start, end=end, periods=periods, freq=freq, normalize=normalize
+    )
+
+    # Como 'freq' puede ser un CustomBusinessDay que maneja feriados, el resultado ya debería considerar los días no comerciales.
+    # Convierte el resultado a datetime y una lista
+    return result.to_pydatetime().tolist()
+
+
 if __name__ == "__main__":
     # Genera y muestra 10 próximos días laborales en Chile excluyendo feriados y fines de semana
     for d in pd.date_range(
@@ -144,3 +193,25 @@ if __name__ == "__main__":
     fecha = datetime(2024, 5, 2)
     for i in range(-7, 7):
         print(f"{fecha = } | {i=} | {add_trading_days(fecha, days=i) = }")
+
+    print("PRUEBA RANGOS")
+
+    start = datetime(2024, 4, 26)
+    end = None
+    periods = 10
+    print(f"{start = } {end = } {periods = }")
+    print(range_trading_days(start, end, periods))
+
+    start = datetime(2024, 4, 26)
+    end = None
+    periods = 10
+    freq = nyse_financial_days
+    print(f"{start = } {end = } {periods = } {freq = } NYSE")
+    print(range_trading_days(start, end, periods, freq))
+
+    start = datetime(2024, 4, 26)
+    end = None
+    periods = -10
+    print(f"{start = } {end = } {periods = } {freq = } CHILE")
+    print(range_trading_days(start, end, periods, freq))
+    
