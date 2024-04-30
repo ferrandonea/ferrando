@@ -82,7 +82,6 @@ def is_trading_day(
     # Verificar si es un feriado
     return not (np.datetime64(input_date) in calendar.holidays)
 
-
 def add_trading_days(
     input_date: datetime,
     days: int,
@@ -114,7 +113,6 @@ def add_trading_days(
         )
         return input_date
     return (input_date + days * calendar).to_pydatetime()
-
 
 def range_trading_days(
     start: Optional[datetime] = None,
@@ -163,6 +161,27 @@ def range_trading_days(
     # Como 'freq' puede ser un CustomBusinessDay que maneja feriados, el resultado ya debería considerar los días no comerciales.
     # Convierte el resultado a datetime y una lista
     return result.to_pydatetime().tolist()
+
+def count_trading_days(start: datetime, end: datetime, calendar: Optional[CustomBusinessDay] = chile_financial_days) -> int:
+    """
+    Calcula el número de días de trading entre dos fechas, excluyendo fines de semana y feriados.
+
+    Args:
+    start (datetime): La fecha de inicio del período.
+    end   (datetime): La fecha de fin del período.
+    calendar (Optional[CustomBusinessDay]): Un calendario de días hábiles que define los feriados y los días de trading.
+                                            Si no se proporciona, se utiliza un calendario predeterminado que debe estar definido previamente.
+
+
+    Returns:
+    int: El número de días de trading entre las dos fechas, sin incluir el inicial.
+    """
+
+    # Generar el rango de fechas de trading entre las dos fechas
+    trading_days = range_trading_days(start = start, end=end, freq=calendar)
+    # Contar el número de días en el rango generado
+    return len(trading_days)-1
+
 
 
 if __name__ == "__main__":
@@ -214,4 +233,10 @@ if __name__ == "__main__":
     periods = -10
     print(f"{start = } {end = } {periods = } {freq = } CHILE")
     print(range_trading_days(start, end, periods, freq))
+
+    print ("PRUEBA TRADING DAYS LEN")
+    start = datetime(2024, 4, 26)
+    end = datetime(2024, 5, 6)
+    print (count_trading_days(start=start, end= end))
+    print (range_trading_days(start=start, end=end))
     
