@@ -1,0 +1,1 @@
+**TODO** : Ordenar el desastre de feriados.py, especialmente lo de los rangos, ya que hay cosas de feriados y otras de no feriados, dejar un módulo de rangos y el caso especial de feriados... dejar como Clase? No creo
