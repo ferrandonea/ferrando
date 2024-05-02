@@ -1,1 +1,1 @@
-from generales import local_current_time
+from .generales import local_current_time
