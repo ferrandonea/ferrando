@@ -67,8 +67,9 @@ def local_current_time(time_zone: str = "America/Santiago") -> datetime:
     santiago_tz = pytz.timezone(time_zone)  # Obtener el objeto de zona horaria de pytz
     return datetime.now(santiago_tz)  # Devolver la hora actual en la zona horaria especificada
 
-# Ejemplos de uso:
-print(normalize_to_datetime(datetime.now()))  # datetime
-print(normalize_to_datetime(date.today()))  # date
-print(normalize_to_datetime("2023-01-01 15:30"))  # string
-print (local_current_time())
+if __name__ == "__main__":
+    # Ejemplos de uso:
+    print(normalize_to_datetime(datetime.now()))  # datetime
+    print(normalize_to_datetime(date.today()))  # date
+    print(normalize_to_datetime("2023-01-01 15:30"))  # string
+    print (local_current_time())
