@@ -82,6 +82,7 @@ def is_trading_day(
     # Verificar si es un feriado
     return not (np.datetime64(input_date) in calendar.holidays)
 
+
 def add_trading_days(
     input_date: datetime,
     days: int,
@@ -114,6 +115,7 @@ def add_trading_days(
         return input_date
     return (input_date + days * calendar).to_pydatetime()
 
+
 def range_trading_days(
     start: Optional[datetime] = None,
     end: Optional[datetime] = None,
@@ -143,7 +145,7 @@ def range_trading_days(
     """
     # Validación de los parámetros de entrada
     params = [start, end, periods]
-    #Chequea que haya al menos 2 de 3 de los params
+    # Chequea que haya al menos 2 de 3 de los params
     if sum(p is not None for p in params) != 2:
         raise ValueError(
             "Se deben especificar exactamente dos de los parámetros 'start', 'end' y 'periods'."
@@ -162,7 +164,49 @@ def range_trading_days(
     # Convierte el resultado a datetime y una lista
     return result.to_pydatetime().tolist()
 
-def count_trading_days(start: datetime, end: datetime, calendar: Optional[CustomBusinessDay] = chile_financial_days) -> int:
+
+def range_calendar_days(
+    start: Optional[datetime] = None,
+    end: Optional[datetime] = None,
+    periods: Optional[int] = None,
+    freq: str = "D",
+    normalize: bool = True,
+) -> list[datetime]:
+    """
+    Genera una lista de fechas de calendario en base a un rango o número de períodos especificados,
+    usando una frecuencia dada.
+
+    Esta función es un envoltorio de `range_trading_days` pero está diseñada para enfocarse en días de calendario,
+    lo que podría diferir en su implementación dependiendo del contexto del calendario de negocios versus
+    calendario regular.
+
+    Args:
+    - start (Optional[datetime]): La fecha de inicio del rango. Si solo se proporciona `periods`, se asume como la fecha de hoy.
+    - end (Optional[datetime]): La fecha de fin del rango. Se ignora si `periods` está especificado.
+    - periods (Optional[int]): El número de períodos para generar. Si se especifica, se ignora `end`.
+    - freq (str): La frecuencia de los días a generar. Por defecto es 'D' (días). Otros ejemplos incluyen 'W' (semanal), 'M' (mensual).
+    - normalize (bool): Si es True, normaliza las fechas al medianoche. Por defecto es True.
+
+    Returns:
+    - List[datetime]: Una lista de objetos datetime representando los días generados según los criterios especificados.
+
+    Raises:
+    - ValueError: Si los parámetros proporcionados no son consistentes o si falta información necesaria para completar la solicitud.
+
+    Example:
+    >>> range_calendar_days(start=datetime(2023, 1, 1), periods=5)
+    [datetime.datetime(2023, 1, 1, 0, 0), datetime.datetime(2023, 1, 2, 0, 0), ...]
+    """
+    return range_trading_days(
+        start=start, end=end, periods=periods, freq=freq, normalize=normalize
+    )
+
+
+def count_trading_days(
+    start: datetime,
+    end: datetime,
+    calendar: Optional[CustomBusinessDay] = chile_financial_days,
+) -> int:
     """
     Calcula el número de días de trading entre dos fechas, excluyendo fines de semana y feriados.
 
@@ -178,10 +222,38 @@ def count_trading_days(start: datetime, end: datetime, calendar: Optional[Custom
     """
 
     # Generar el rango de fechas de trading entre las dos fechas
-    trading_days = range_trading_days(start = start, end=end, freq=calendar)
+    trading_days = range_trading_days(start=start, end=end, freq=calendar)
     # Contar el número de días en el rango generado
-    return len(trading_days)-1
+    return len(trading_days) - 1
 
+
+def count_calendar_days(start: datetime, end: datetime, calendar: str = "D") -> int:
+    """
+    Calcula el número total de días entre dos fechas según un calendario especificado.
+
+    Esta función determina el número de días de calendario o días de trading (si se especifica otro tipo de calendario)
+    entre dos fechas, incluyendo la fecha de inicio pero excluyendo la fecha de fin. Por defecto, cuenta todos los días
+    (calendario de días "D"), pero se puede ajustar para contar otro tipo de días, como días hábiles.
+
+    Args:
+    - start (datetime): La fecha de inicio del período.
+    - end (datetime): La fecha de fin del período.
+    - calendar (str): El tipo de calendario a utilizar para contar los días. El valor predeterminado es "D", que indica
+                      días consecutivos. Otras opciones podrían ser "B" para días hábiles, dependiendo de la implementación.
+
+    Returns:
+    - int: El número total de días entre las dos fechas, contando desde la fecha de inicio y excluyendo la fecha de fin.
+
+    Example:
+    >>> start_date = datetime(2023, 1, 1)
+    >>> end_date = datetime(2023, 1, 5)
+    >>> count_calendar_days(start_date, end_date)
+    4
+    """
+    # Generar el rango de fechas de trading entre las dos fechas
+    calendar_days = range_calendar_days(start=start, end=end, freq=calendar)
+    # Contar el número de días en el rango generado, excluyendo el último día
+    return len(calendar_days) - 1
 
 
 if __name__ == "__main__":
@@ -234,9 +306,9 @@ if __name__ == "__main__":
     print(f"{start = } {end = } {periods = } {freq = } CHILE")
     print(range_trading_days(start, end, periods, freq))
 
-    print ("PRUEBA TRADING DAYS LEN")
+    print("PRUEBA TRADING DAYS LEN")
     start = datetime(2024, 4, 26)
     end = datetime(2024, 5, 6)
-    print (count_trading_days(start=start, end= end))
-    print (range_trading_days(start=start, end=end))
-    
+    print(count_trading_days(start=start, end=end))
+    print(range_trading_days(start=start, end=end))
+    print(range_calendar_days(start=start, end=end))
