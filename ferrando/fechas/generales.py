@@ -1,6 +1,6 @@
 from datetime import datetime, date
 from dateutil import parser
-
+import pytz
 
 def named_weekday(input_date: datetime, long: bool = True) -> str:
     """
@@ -50,7 +50,25 @@ def normalize_to_datetime(input_date: datetime | date | str) -> datetime:
     else:
         raise TypeError("El tipo de input proporcionado no es válido; debe ser datetime, date o string.")
 
+def local_current_time(time_zone: str = "America/Santiago") -> datetime:
+    """
+    Devuelve la hora actual en la zona horaria especificada.
+
+    Args:
+    - time_zone (str): La zona horaria en la que se desea obtener la hora actual.
+                       Por defecto es "America/Santiago".
+
+    Returns:
+    - datetime: Un objeto datetime que representa la hora actual en la zona horaria dada.
+
+    Esta función utiliza la biblioteca pytz para manejar correctamente las zonas horarias.
+    Se puede especificar cualquier zona horaria soportada por pytz para obtener la hora local correspondiente.
+    """
+    santiago_tz = pytz.timezone(time_zone)  # Obtener el objeto de zona horaria de pytz
+    return datetime.now(santiago_tz)  # Devolver la hora actual en la zona horaria especificada
+
 # Ejemplos de uso:
 print(normalize_to_datetime(datetime.now()))  # datetime
 print(normalize_to_datetime(date.today()))  # date
 print(normalize_to_datetime("2023-01-01 15:30"))  # string
+print (local_current_time())
